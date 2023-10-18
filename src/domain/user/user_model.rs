@@ -9,5 +9,5 @@ pub struct User {
     pub email: String,
     pub username: String,
     pub password: String,
-    created_at: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
 }
