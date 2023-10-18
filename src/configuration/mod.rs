@@ -47,7 +47,7 @@ impl Default for PsqlConfiguration {
 impl Default for ServerConfiguration {
     fn default() -> Self {
         ServerConfiguration {
-            port: env::var("PORT").expect("PORT must be set"),
+            port: env::var("PORT").expect("PORT not found"),
         }
     }
 }
@@ -77,7 +77,7 @@ impl Configuration {
     pub fn new() -> Self {
         dotenv()
             .ok()
-            .expect("Unable to find .env file. Create one based on the .env.example");
+            .expect("Unable to find .env file. Create one based on the env.example");
         Configuration::default()
     }
 }
