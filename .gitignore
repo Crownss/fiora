@@ -16,3 +16,4 @@ Cargo.lock
 .Ds_Store
 .Ds_Store/**/**
 .idea
+.env
