@@ -2,13 +2,12 @@ use chrono::{DateTime, Local};
 use uuid::Uuid;
 
 #[derive(Debug)]
-pub struct User {
+pub struct Book {
     pub id: Uuid,
-    pub first_name: String,
-    pub last_name: String,
-    pub email: String,
-    pub username: String,
-    pub password: String,
+    pub title: String,
+    pub desc: String,
+    pub tag: Vec<String>,
+    pub borrowed_value: u32,
     pub createdtime: DateTime<Local>,
     pub updatedtime: DateTime<Local>,
 }

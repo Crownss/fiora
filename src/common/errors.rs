@@ -1,6 +1,6 @@
 use thiserror::Error as ThisError;
-use thiserror::__private::AsDynError;
 use tokio_postgres::Error as psqlError;
+
 // use warp::Rejection;
 
 pub type Res<T> = std::result::Result<T, CustomError>;
