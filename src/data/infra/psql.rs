@@ -1,20 +1,14 @@
-use crate::common::errors::{CustomError, Res};
-use crate::configuration::Configuration;
+use std::future::Future;
+use std::sync::Arc;
 use async_once::AsyncOnce;
 use lazy_static::lazy_static;
-use tokio_postgres::tls::NoTlsStream;
-use tokio_postgres::{Client, Connection, NoTls, Socket};
+use tokio_postgres::{Client, GenericClient, NoTls, Config, Connection};
 use tracing::{error, info};
 
-lazy_static! {}
+use crate::common::errors::{CustomError, Res};
+use crate::configuration::Configuration;
 
 pub type TheClient = Client;
-// pub type TheConnection = Connection<Socket, NoTlsStream>;
-
-// pub struct PsqlConn {
-//     pub the_client: Client,
-//     pub the_connection: Connection<Socket, NoTlsStream>,
-// }
 
 lazy_static! {
     static ref THECLIENT: AsyncOnce<Res<Client>> = AsyncOnce::new(async { new_connection().await });
@@ -22,7 +16,14 @@ lazy_static! {
 
 pub async fn new_connection() -> Res<Client> {
     let config = Configuration::new();
-    let (client, conn) = tokio_postgres::connect(
+    let configss = Config::new()
+        .user("nama_pengguna")
+        .password("kata_sandi")
+        .host("alamat_host")
+        .port(5432)
+        .dbname("nama_database")
+        .connect(NoTls);
+    let (_, conn) = tokio_postgres::connect(
         format!(
             "host={} port={} user={} password={} dbname={} connect_timeout={}",
             config.psql.host,
@@ -36,26 +37,27 @@ pub async fn new_connection() -> Res<Client> {
         NoTls,
     )
     .await?;
-    tokio::spawn(async move {
-        if let Err(e) = conn.await {
-            error!("disconnected from postgres and got err: {}", e);
-        }
-    });
-    // Ok(PsqlConn {
-    //     the_client: client,
-    //     the_connection: conn,
-    // })
+    // tokio::spawn(async move {
+    //     if let Err(e) = conn.await {
+    //         error!("disconnected from postgres and got err: {}", e);
+    //     }
+    // });
+    let pool = conn.poll();
     Ok(client)
 }
 
-pub async fn get_connection<'a>() -> &'a Res<Client> {
-    THECLIENT.get().await.clone()
+pub async fn get_connection<'a>() -> Arc<Res<&'a Client>>{
+    Arc::new(THECLIENT.get().await.clone())
 }
 
 pub async fn check_connection() -> Res<()> {
     info!("Checking on database connection...");
     let conn = get_connection().await;
-    let test = conn.as_ref().unwrap().query_one("select $1::TEXT", &[&"pong"]).await;
+    let test = conn
+        .as_ref()
+        .unwrap()
+        .query_one("select $1::TEXT", &[&"pong"])
+        .await?;
     match test {
         Ok(row) => {
             let res: String = row.get(0);
@@ -63,11 +65,5 @@ pub async fn check_connection() -> Res<()> {
         }
         Err(err) => error!("{err}"),
     }
-    // let client = get_connection().await.unwrap().the_client;
-    // tokio::spawn(async move {
-    //     if let Err(e) = conn.unwrap().the_connection.await {
-    //         error!("disconnected from postgres and got err: {}", e);
-    //     }
-    // });
     Ok(())
 }
