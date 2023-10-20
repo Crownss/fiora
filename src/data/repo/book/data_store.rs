@@ -1,21 +1,21 @@
 use std::fmt::Display;
-
 use chrono::{DateTime, Local};
 use uuid::Uuid;
+use bb8::Pool;
+use bb8_postgres::{tokio_postgres::NoTls, PostgresConnectionManager};
 
 use crate::common::errors::CustomError;
 use crate::common::errors::Res;
-use crate::data::infra::psql::TheClient;
 use crate::data::repo::book::entity::BookEntity;
 use crate::domain::book::book_model::Book;
 
 impl super::BookDataStore {
-    pub fn new(the_client: TheClient) -> Self {
+    pub fn new(the_client: Pool<PostgresConnectionManager<NoTls>>) -> Self {
         Self { the_client }
     }
     pub async fn create_book(&self, book: &Book) -> Res<()> {
         let query = "insert into books (id, title, desc, value, tag, createdtime, updatedtime) values ($1, $2, $3, $4, $5, $6, $7);";
-        self.the_client
+        self.the_client.get().await.unwrap()
             .execute(
                 query,
                 &[
@@ -36,7 +36,7 @@ impl super::BookDataStore {
     pub async fn list_book(&self) -> Res<Vec<BookEntity>> {
         let query = "select id, title, desc, value, tag, createdtime, updatedtime from books";
         let mut res = Vec::new();
-        let do_query = self.the_client.query(query, &[]).await?;
+        let do_query = self.the_client.get().await.unwrap().query(query, &[]).await?;
         for me in do_query {
             let id: Uuid = me.get(0);
             let title: String = me.get(1);
@@ -66,7 +66,7 @@ impl super::BookDataStore {
             Err(_) => { query.push_str("b.title=$1") }
         };
         let mut res = BookEntity::default();
-        let do_query = self.the_client.query_one(&query, &[&param]).await?;
+        let do_query = self.the_client.get().await.unwrap().query_one(&query, &[&param]).await?;
         let id: Uuid = do_query.get(0);
         let title: String = do_query.get(1);
         let desc: String = do_query.get(2);
