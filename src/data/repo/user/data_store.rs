@@ -1,24 +1,22 @@
 use std::fmt::Display;
-use std::sync::Arc;
-
 use chrono::{DateTime, Local};
 use regex::Regex;
-use tokio_postgres::Client;
 use uuid::Uuid;
-
+use bb8::Pool;
+use bb8_postgres::{tokio_postgres::{NoTls}, PostgresConnectionManager};
 use crate::common::errors::CustomError;
 use crate::common::errors::Res;
 use crate::data::repo::user::entity::UserEntity;
 use crate::domain::user::user_model::User;
 
 impl super::UserDataStore {
-    pub fn new(the_client: Arc<Client>) -> Self {
+    pub fn new(the_client: Pool<PostgresConnectionManager<NoTls>>) -> Self {
         Self { the_client }
     }
 
     pub async fn create_user(&self, user: &User) -> Res<()> {
         let query = "insert into users (id, bookid, firstname, lastname, email, username, password, createdtime, updatedtime) values ($1, $2, $3, $4, $5, $6, $7, $8);";
-        self.the_client
+        self.the_client.get().await.unwrap()
             .execute(
                 query,
                 &[
@@ -31,16 +29,14 @@ impl super::UserDataStore {
                     &user.createdtime,
                     &user.updatedtime,
                 ],
-            )
-            .await
-            .map_err(CustomError::from)?;
+            ).await?;
         Ok(())
     }
 
     pub async fn list_user(&self) -> Res<Vec<UserEntity>> {
         let query =
             "select id, bookid, firstname, lastname, email, username, createdtime, updatedtime from users";
-        let do_query = self.the_client.query(query, &[]).await?;
+        let do_query = self.the_client.get().await.unwrap().query(query, &[]).await?;
         let mut res = Vec::new();
         for me in do_query {
             let id: Uuid = me.get(0);
@@ -52,15 +48,15 @@ impl super::UserDataStore {
             let createdtime: DateTime<Local> = me.get(6);
             let updatedtime: DateTime<Local> = me.get(7);
             let temp = UserEntity {
-                id: id,
+                id,
                 borrowed_book_id: bookid,
                 first_name: firstname,
                 last_name: lastname,
-                email: email,
-                username: username,
+                email,
+                username,
                 password: "".to_string(),
-                createdtime: createdtime,
-                updatedtime: updatedtime,
+                createdtime,
+                updatedtime,
             };
             res.push(temp)
         };
@@ -81,7 +77,7 @@ impl super::UserDataStore {
                 }
             }
         }
-        let do_query = self.the_client.query_one(&query, &[&param]).await?;
+        let do_query = self.the_client.get().await.unwrap().query_one(&query, &[&param]).await?;
         let mut res = UserEntity::default();
         let id: Uuid = do_query.get(0);
         let bookid: Uuid = do_query.get(1);

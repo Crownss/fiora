@@ -1,3 +1,5 @@
+use std::fmt::Error;
+use thiserror::__private::AsDynError;
 use thiserror::Error as ThisError;
 use tokio_postgres::Error as psqlError;
 
@@ -11,6 +13,8 @@ pub enum CustomError {
     DatabaseError(String),
     #[error("An error occurred during http interaction. {0}")]
     HttpError(String),
+    #[error("An error occurred during general interaction {0}")]
+    GeneralError(String)
 }
 
 impl From<psqlError> for CustomError {
@@ -24,6 +28,18 @@ impl From<psqlError> for CustomError {
         }
     }
 }
+
+// impl From<Error> for CustomError{
+//     fn from(value: Error) -> Self {
+//         match value.as_dyn_error() {
+//             Some(res) => CustomError::GeneralError(res.to_string()),
+//             None => {
+//                 eprintln!("error {:?}", value);
+//                 CustomError::GeneralError(String::from("Unrecognized general error!"))
+//             }
+//         }
+//     }
+// }
 
 // impl warp::reject::Reject for CustomError {}
 

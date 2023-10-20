@@ -21,7 +21,10 @@ pub struct PsqlConfiguration {
 }
 
 pub struct ServerConfiguration {
-    pub port: String,
+    pub app_name: String,
+    pub port: u16,
+    pub client_timeout: u8,
+    pub graceful: u8,
 }
 
 pub struct Configuration {
@@ -48,7 +51,10 @@ impl Default for PsqlConfiguration {
 impl Default for ServerConfiguration {
     fn default() -> Self {
         ServerConfiguration {
-            port: env::var("PORT").expect("PORT not found"),
+            app_name: env::var("appName").expect("appName not found"),
+            port: env::var("PORT").expect("PORT not found").parse().unwrap(),
+            graceful: env::var("graceful").expect("graceful not found").parse().unwrap(),
+            client_timeout: env::var("client.timeout").expect("client.timeout not found").parse().unwrap(),
         }
     }
 }
