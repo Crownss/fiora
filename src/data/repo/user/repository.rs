@@ -1,6 +1,6 @@
 use crate::common::errors::Res;
-use crate::domain::user::user_model::User;
-use crate::domain::user::IUserRepository;
+use crate::interactor::user::user_model::User;
+use crate::interactor::user::IUserRepository;
 
 pub struct UserRepo {
     user_repo: super::UserDataStore,

@@ -7,7 +7,7 @@ use bb8_postgres::{tokio_postgres::NoTls, PostgresConnectionManager};
 use crate::common::errors::CustomError;
 use crate::common::errors::Res;
 use crate::data::repo::book::entity::BookEntity;
-use crate::domain::book::book_model::Book;
+use crate::interactor::book::book_model::Book;
 
 impl super::BookDataStore {
     pub fn new(the_client: Pool<PostgresConnectionManager<NoTls>>) -> Self {

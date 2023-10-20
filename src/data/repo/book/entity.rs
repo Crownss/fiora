@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local};
 use uuid::Uuid;
-use crate::domain::book::book_model::Book;
+use crate::interactor::book::book_model::Book;
 
 #[derive(Debug)]
 pub struct BookEntity {
