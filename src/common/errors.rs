@@ -1,7 +1,10 @@
-use std::fmt::Error;
-use thiserror::__private::AsDynError;
+use actix_web::http::header::ContentType;
+use actix_web::{HttpResponse, ResponseError};
 use thiserror::Error as ThisError;
 use tokio_postgres::Error as psqlError;
+use tracing::error;
+
+use super::responses::DefaultResponse;
 
 // use warp::Rejection;
 
@@ -9,23 +12,40 @@ pub type Res<T> = std::result::Result<T, CustomError>;
 
 #[derive(Clone, Debug, ThisError)]
 pub enum CustomError {
-    #[error("An error occurred during database interaction. {0}")]
+    #[error("{0}")]
     DatabaseError(String),
-    #[error("An error occurred during http interaction. {0}")]
+    #[error("{0}")]
     HttpError(String),
-    #[error("An error occurred during general interaction {0}")]
-    GeneralError(String)
+    // #[error("An error occurred during general interaction {0}")]
+    // GeneralError(String)
 }
 
 impl From<psqlError> for CustomError {
     fn from(psql_error: psqlError) -> Self {
         match psql_error.as_db_error() {
-            Some(db_error) => CustomError::DatabaseError(db_error.to_string()),
+            Some(db_error) => {
+                error!("error from database {:#?}", db_error.to_string());
+                CustomError::DatabaseError(db_error.detail().unwrap().to_string())
+            },
             None => {
-                eprintln!("error {:?}", psql_error);
+                error!("error from database {:#?}", psql_error);
                 CustomError::DatabaseError(String::from("Unrecognized database error!"))
             }
         }
+    }
+}
+
+impl ResponseError for CustomError {
+    fn error_response(&self) -> actix_web::HttpResponse<actix_web::body::BoxBody> {
+        error!("got http error: {}", self.to_string().clone());
+        let resp: DefaultResponse<String> = DefaultResponse {
+            status: "4000".to_string(),
+            message: self.to_string(),
+            data: None,
+        };
+        HttpResponse::Ok()
+            .insert_header(ContentType::json())
+            .json(resp)
     }
 }
 

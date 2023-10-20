@@ -3,8 +3,8 @@ use tokio;
 mod common;
 mod configuration;
 mod data;
-mod domain;
-mod server;
+mod interactor;
+mod protocol;
 mod container;
 
 #[tokio::main]

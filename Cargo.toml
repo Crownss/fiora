@@ -19,6 +19,7 @@ bcrypt = "0.15.0"
 chrono = { version = "0.4.31", features = ["serde"] }
 dotenv = "0.15.0"
 erased-serde = "0.3.31"
+futures-util = "0.3.28"
 lazy_static = "1.4.0"
 regex = "1.10.2"
 serde = { version = "1.0.189", features = ["derive"] }

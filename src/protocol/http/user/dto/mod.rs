@@ -2,16 +2,16 @@ use crate::common::errors::CustomError;
 use std::convert::TryFrom;
 use chrono::{DateTime, NaiveDateTime};
 use serde::Deserialize;
-use crate::domain::user::user_model::User;
+use crate::interactor::user::user_model::User;
 use uuid::Uuid;
 #[derive(Deserialize)]
 pub struct CreateUserRequest {
-    pub first_name: String,
-    pub last_name: String,
+    pub firstName: String,
+    pub lastName: String,
     pub email: String,
     pub username: String,
     pub password: String,
-    pub conf_password: String,
+    pub confPassword: String,
 }
 
 impl TryFrom<CreateUserRequest> for User{
@@ -19,14 +19,16 @@ impl TryFrom<CreateUserRequest> for User{
     fn try_from(value: CreateUserRequest) -> Result<Self, Self::Error> {
         Ok(
             User{
-                id: Uuid::new_v4(),
-                first_name: value.first_name,
+                id: Uuid::nil(),
+                borrowedBookId: Uuid::nil(),
+                firstName: value.firstName,
+                lastName: value.lastName,
+                email: value.email,
                 username: value.username,
                 password: value.password,
-                email: value.email,
-                last_name: value.last_name,
-                createdtime: NaiveDateTime::default(),
-                updatedtime: NaiveDateTime::default(),
+                confPassword: value.confPassword,
+                createdTime: NaiveDateTime::default(),
+                updatedTime: NaiveDateTime::default(),
             }
         )
     }

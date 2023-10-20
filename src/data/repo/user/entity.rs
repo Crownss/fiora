@@ -1,7 +1,7 @@
 use chrono::{DateTime, NaiveDateTime};
 // use tokio_postgres::types::FromSql;
+use crate::interactor::user::user_model::User;
 use uuid::Uuid;
-use crate::domain::user::user_model::User;
 
 #[derive(Debug)]
 pub struct UserEntity {
@@ -36,13 +36,15 @@ impl From<UserEntity> for User {
     fn from(entity: UserEntity) -> Self {
         Self {
             id: entity.id,
-            first_name: entity.first_name,
-            last_name: entity.last_name,
+            borrowedBookId: entity.borrowed_book_id,
+            firstName: entity.first_name,
+            lastName: entity.last_name,
             email: entity.email,
             username: entity.username,
             password: entity.password,
-            createdtime: entity.createdtime,
-            updatedtime: entity.updatedtime,
+            confPassword: "".to_string(),
+            createdTime: entity.createdtime,
+            updatedTime: entity.updatedtime,
         }
     }
 }

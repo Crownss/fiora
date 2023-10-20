@@ -1,4 +1,4 @@
-use crate::domain::book::book_model::Book;
+use crate::interactor::book::book_model::Book;
 use crate::common::errors::Res;
 
 pub struct BookRepo {

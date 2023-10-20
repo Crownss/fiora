@@ -7,7 +7,7 @@ use bb8_postgres::{tokio_postgres::{NoTls}, PostgresConnectionManager};
 use crate::common::errors::CustomError;
 use crate::common::errors::Res;
 use crate::data::repo::user::entity::UserEntity;
-use crate::domain::user::user_model::User;
+use crate::interactor::user::user_model::User;
 
 impl super::UserDataStore {
     pub fn new(the_client: Pool<PostgresConnectionManager<NoTls>>) -> Self {
@@ -15,19 +15,20 @@ impl super::UserDataStore {
     }
 
     pub async fn create_user(&self, user: &User) -> Res<()> {
-        let query = "insert into users (id, bookid, firstname, lastname, email, username, password, createdtime, updatedtime) values ($1, $2, $3, $4, $5, $6, $7, $8);";
+        let query = "insert into users (id, bookid, firstname, lastname, email, username, password, createdtime, updatedtime) values ($1, $2, $3, $4, $5, $6, $7, $8, $9);";
         self.the_client.get().await.unwrap()
             .execute(
                 query,
                 &[
                     &user.id,
-                    &user.first_name,
-                    &user.last_name,
+                    &user.borrowedBookId,
+                    &user.firstName,
+                    &user.lastName,
                     &user.email,
                     &user.username,
                     &user.password,
-                    &user.createdtime,
-                    &user.updatedtime,
+                    &user.createdTime,
+                    &user.updatedTime,
                 ],
             ).await?;
         Ok(())
