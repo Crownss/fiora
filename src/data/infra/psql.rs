@@ -25,15 +25,6 @@ pub async fn new_connection() -> Res<Pool<PostgresConnectionManager<NoTls>>> {
         .application_name(config.server.app_name.trim())
         .connect_timeout(Duration::new(config.psql.time_out as u64, 0))
         .to_owned();
-    // let theuri = format!("postgres://{}:{}@{}:{}/{}?connect_timeout={}&application_name={}",
-    //                      config.psql.username.trim(),
-    //                      config.psql.password.trim(),
-    //                      config.psql.host.trim(),
-    //                      config.psql.port.parse::<u32>().unwrap(),
-    //                      config.psql.password.trim(),
-    //                      config.psql.time_out,
-    //                      config.server.app_name.trim(),
-    // ).trim();
     let conn_manager = bb8_postgres::PostgresConnectionManager::new(configss, NoTls);
     let the_pool = bb8::Pool::builder().max_size(10).build(conn_manager.clone()).await.expect("cannot create connection for pool postgres");
     tokio::spawn(async move{

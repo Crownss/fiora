@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, NaiveDateTime};
 // use tokio_postgres::types::FromSql;
 use uuid::Uuid;
 use crate::domain::user::user_model::User;
@@ -12,8 +12,8 @@ pub struct UserEntity {
     pub email: String,
     pub username: String,
     pub password: String,
-    pub createdtime: DateTime<Local>,
-    pub updatedtime: DateTime<Local>,
+    pub createdtime: NaiveDateTime,
+    pub updatedtime: NaiveDateTime,
 }
 
 impl Default for UserEntity {
@@ -26,8 +26,8 @@ impl Default for UserEntity {
             email: "".to_string(),
             username: "".to_string(),
             password: "".to_string(),
-            createdtime: DateTime::default(),
-            updatedtime: DateTime::default(),
+            createdtime: NaiveDateTime::default(),
+            updatedtime: NaiveDateTime::default(),
         }
     }
 }

@@ -11,6 +11,7 @@ use tokio_postgres::GenericClient;
 pub async fn start() -> std::io::Result<()> {
     tracing_subscriber::fmt::init();
     let config = Configuration::new();
+    let _ = check_connection().await.unwrap();
     let theclient = get_connection().await.unwrap();
     //user//
     let user_data_store = UserDataStore::new(theclient.clone());

@@ -1,6 +1,6 @@
 use crate::common::errors::CustomError;
 use std::convert::TryFrom;
-use chrono::DateTime;
+use chrono::{DateTime, NaiveDateTime};
 use serde::Deserialize;
 use crate::domain::user::user_model::User;
 use uuid::Uuid;
@@ -25,8 +25,8 @@ impl TryFrom<CreateUserRequest> for User{
                 password: value.password,
                 email: value.email,
                 last_name: value.last_name,
-                createdtime: DateTime::default(),
-                updatedtime: DateTime::default(),
+                createdtime: NaiveDateTime::default(),
+                updatedtime: NaiveDateTime::default(),
             }
         )
     }
