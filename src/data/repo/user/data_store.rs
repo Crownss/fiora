@@ -1,5 +1,5 @@
 use std::fmt::Display;
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, NaiveDateTime};
 use regex::Regex;
 use uuid::Uuid;
 use bb8::Pool;
@@ -45,8 +45,8 @@ impl super::UserDataStore {
             let lastname: String = me.get(3);
             let email: String = me.get(4);
             let username: String = me.get(5);
-            let createdtime: DateTime<Local> = me.get(6);
-            let updatedtime: DateTime<Local> = me.get(7);
+            let createdtime: NaiveDateTime = me.get(6);
+            let updatedtime: NaiveDateTime = me.get(7);
             let temp = UserEntity {
                 id,
                 borrowed_book_id: bookid,
@@ -85,8 +85,8 @@ impl super::UserDataStore {
         let lastname: String = do_query.get(3);
         let email: String = do_query.get(4);
         let username: String = do_query.get(5);
-        let createdtime: DateTime<Local> = do_query.get(6);
-        let updatedtime: DateTime<Local> = do_query.get(7);
+        let createdtime: NaiveDateTime = do_query.get(6);
+        let updatedtime: NaiveDateTime = do_query.get(7);
         res = UserEntity {
             id: id,
             borrowed_book_id: bookid,

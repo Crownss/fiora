@@ -1,7 +1,7 @@
-use chrono::{DateTime, Local};
+use chrono::{DateTime, NaiveDateTime};
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize)]
 pub struct User {
     pub id: Uuid,
     pub first_name: String,
@@ -9,6 +9,6 @@ pub struct User {
     pub email: String,
     pub username: String,
     pub password: String,
-    pub createdtime: DateTime<Local>,
-    pub updatedtime: DateTime<Local>,
+    pub createdtime: NaiveDateTime,
+    pub updatedtime: NaiveDateTime,
 }
