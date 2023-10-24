@@ -2,8 +2,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use actix_web::web::{get, post, scope, Data};
-use actix_web::{middleware::Logger, App, HttpServer, dev::Service as _};
-use futures_util::{FutureExt};
+use actix_web::{dev::Service as _, middleware::Logger, App, HttpServer};
+use futures_util::FutureExt;
 use tracing::info;
 
 use crate::data::repo::user::repository::UserRepo;
@@ -36,18 +36,12 @@ impl Server {
         let uservice = Data::new(self.service.user_service.clone());
         HttpServer::new(move|| {
             App::new()
+                .wrap(super::middleware::request::Logging)
         .wrap(Logger::new(
-            "\n tz: %t\n uri: %U\n got IP: %{r}a\n with sec: %T\n in: %r\n and return: %s\n with user-agent: %{User-Agent}i",
+            "\n uri: %U\n got IP: %{r}a\n with sec: %T\n in: %r\n and return: %s\n with user-agent: %{User-Agent}i",
         ))
         .service(
             scope("/v1/api")
-            //     .wrap_fn(|req, srv| {
-            //     info!("request: {:?}", srv);
-            //     srv.call(req).map(|res| {
-            //         // info!("response: {:#?}",res.response());
-            //         res
-            //     })
-            // })
                 .app_data(uservice.clone())
                 .route("/users", get().to(user_handler::list_users))
                 .route("/users", post().to(user_handler::create_users)),
@@ -56,7 +50,7 @@ impl Server {
         .unwrap()
         .shutdown_timeout(self.graceful as u64)
         .client_request_timeout(Duration::new(self.client_timeout as u64, 0))
-        .workers(1)
+        // .workers(1)
         .run()
         .await
         .unwrap();

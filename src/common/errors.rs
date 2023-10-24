@@ -16,6 +16,10 @@ pub enum CustomError {
     DatabaseError(String),
     #[error("{0}")]
     HttpError(String),
+    #[error("{0}")]
+    BadRequest(String),
+    // #[error("{0}")]
+    // InternalServerError(String),
     // #[error("An error occurred during general interaction {0}")]
     // GeneralError(String)
 }
@@ -36,16 +40,21 @@ impl From<psqlError> for CustomError {
 }
 
 impl ResponseError for CustomError {
-    fn error_response(&self) -> actix_web::HttpResponse<actix_web::body::BoxBody> {
+    fn error_response(&self) -> HttpResponse{
         error!("got http error: {}", self.to_string().clone());
-        let resp: DefaultResponse<String> = DefaultResponse {
+        let mut resp: DefaultResponse<String> = DefaultResponse {
             status: "4000".to_string(),
-            message: self.to_string(),
+            message: "Invalid Request Format!".to_string(),
             data: None,
         };
-        HttpResponse::Ok()
-            .insert_header(ContentType::json())
-            .json(resp)
+        match self {
+            CustomError::BadRequest(_) =>HttpResponse::Ok().insert_header(ContentType::json()).json(resp),
+            _ => {
+                resp.status = "5000".to_string();
+                resp.message = "Something went wrong!".to_string();
+                HttpResponse::Ok().insert_header(ContentType::json()).json(resp)
+            },
+        }
     }
 }
 
