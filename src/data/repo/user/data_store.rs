@@ -31,6 +31,7 @@ impl super::UserDataStore {
                     &user.updatedTime,
                 ],
             ).await?;
+        drop(user);
         Ok(())
     }
 
@@ -59,7 +60,7 @@ impl super::UserDataStore {
                 createdtime,
                 updatedtime,
             };
-            res.push(temp)
+            res.push(temp);
         };
         Ok(res)
     }
@@ -69,7 +70,7 @@ impl super::UserDataStore {
         let re = Regex::new(regexingmail).unwrap();
         let mut query = String::from("select id, bookid, firstname, lastname, email, username, createdtime, updatedtime from users u where ");
         match Uuid::parse_str(&param.to_string().trim()) {
-            Ok(res) => { query.push_str("u.id=$1") }
+            Ok(_) => { query.push_str("u.id=$1") }
             Err(_) => {
                 if re.is_match(&param.to_string().trim()) {
                     query.push_str("u.email=$1")

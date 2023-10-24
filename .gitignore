@@ -17,3 +17,4 @@ Cargo.lock
 .Ds_Store/**/**
 .idea
 .env
+request.http

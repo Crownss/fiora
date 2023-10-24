@@ -16,6 +16,7 @@ impl UserRepo {
 impl IUserRepository for UserRepo {
     async fn create_user(&self, user: &User) -> Res<()> {
         let res = self.user_repo.create_user(user).await?;
+        drop(user);
         Ok(())
     }
     async fn list_user(&self) -> Res<Vec<User>> {
