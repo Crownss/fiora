@@ -1,16 +1,22 @@
-use chrono::{DateTime, Local};
-use uuid::Uuid;
 use crate::interactor::book::book_model::Book;
+use chrono::NaiveDateTime;
+use sqlx::prelude::FromRow;
+use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, FromRow)]
 pub struct BookEntity {
     pub id: Uuid,
     pub title: String,
     pub desc: String,
-    pub borrowed_value: u32,
+    pub borrowed_value: i32,
     pub tag: Vec<String>,
-    pub createdtime: DateTime<Local>,
-    pub updatedtime: DateTime<Local>,
+    pub createdtime: NaiveDateTime,
+    pub updatedtime: NaiveDateTime,
+}
+
+pub struct Req {
+    pub limit: i64,
+    pub page: i64,
 }
 
 impl Default for BookEntity {
@@ -21,15 +27,15 @@ impl Default for BookEntity {
             desc: "".to_string(),
             borrowed_value: 0,
             tag: vec![],
-            createdtime: DateTime::default(),
-            updatedtime: DateTime::default(),
+            createdtime: NaiveDateTime::default(),
+            updatedtime: NaiveDateTime::default(),
         }
     }
 }
 
-impl From<BookEntity> for Book{
+impl From<BookEntity> for Book {
     fn from(value: BookEntity) -> Self {
-        Self{
+        Self {
             id: value.id,
             title: value.title,
             desc: value.desc,

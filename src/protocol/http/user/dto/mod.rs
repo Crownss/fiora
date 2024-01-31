@@ -2,7 +2,7 @@ use crate::common::errors::CustomError;
 use std::convert::TryFrom;
 use chrono::{DateTime, NaiveDateTime};
 use serde::Deserialize;
-use crate::interactor::user::user_model::User;
+use crate::interactor::user::model::User;
 use uuid::Uuid;
 #[derive(Deserialize)]
 pub struct CreateUserRequest {

@@ -54,6 +54,7 @@ impl<S, B> Service<ServiceRequest> for LoggingMiddleware<S>
         Box::pin(async move {
             // extract bytes from request body
             let body = req.extract::<web::Bytes>().await.unwrap();
+            // let path = req.path();
             info!("request: {body:#?}");
 
             // re-insert body back into request to be used by handlers
@@ -61,7 +62,6 @@ impl<S, B> Service<ServiceRequest> for LoggingMiddleware<S>
 
             let res = svc.call(req).await?;
 
-            // println!("response: {:?}", res.headers());
             Ok(res)
         })
     }

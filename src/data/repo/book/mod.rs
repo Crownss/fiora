@@ -1,10 +1,9 @@
-use crate::data::infra::psql::TheClient;
-pub mod entity;
+use sqlx::{Pool, Postgres};
+
 pub mod data_store;
+pub mod entity;
 pub mod repository;
-use bb8::Pool;
-use bb8_postgres::{tokio_postgres::NoTls, PostgresConnectionManager};
 
 pub struct BookDataStore {
-    the_client: Pool<PostgresConnectionManager<NoTls>>,
+    the_client: Pool<Postgres>,
 }
