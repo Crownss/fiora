@@ -12,11 +12,12 @@ impl BookRepo{
 
     pub async fn create_book(&self, book: &Book)->Res<()>{
         let res = self.book_repo.create_book(book).await?;
-        Ok(())
+        Ok(res)
     }
 
     pub async fn list_book(&self) -> Res<Vec<Book>>{
-        let res = self.book_repo.list_book().await?;
-        Ok(res.into_iter().map(Book::from).collect())
+        // let res = self.book_repo.list_book().await?;
+        // Ok(res.0.into_iter().map(Book::from).collect())
+        Ok(Vec::new())
     }
 }

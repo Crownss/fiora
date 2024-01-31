@@ -1,53 +1,52 @@
-use std::time::Duration;
+use crate::{common::errors::Res, configuration::get_configurations};
 use async_once::AsyncOnce;
-use bb8::{ManageConnection, Pool};
-use bb8_postgres::{PostgresConnectionManager, tokio_postgres::{NoTls, Config}};
 use lazy_static::lazy_static;
+use sqlx::{
+    postgres::{PgConnectOptions, PgPoolOptions},
+    Pool, Postgres,
+};
+use std::time::Duration;
 use tracing::{error, info};
 
-use crate::common::errors::Res;
-use crate::configuration::Configuration;
-
-pub type TheClient = Pool<PostgresConnectionManager<NoTls>>;
+pub type TheClient = Pool<Postgres>;
 
 lazy_static! {
-    static ref THECLIENT: AsyncOnce<Res<Pool<PostgresConnectionManager<NoTls>>>> = AsyncOnce::new(async { new_connection().await });
+    static ref THECLIENT: AsyncOnce<Res<Pool<Postgres>>> =
+        AsyncOnce::new(async { new_connection().await });
 }
 
-pub async fn new_connection() -> Res<Pool<PostgresConnectionManager<NoTls>>> {
-    let config = Configuration::new();
-    let configss = Config::new()
-        .host(config.psql.host.trim())
-        .port(config.psql.port.parse().unwrap())
-        .user(config.psql.username.trim())
-        .password(config.psql.password.trim())
-        .dbname(config.psql.db_name.trim())
-        .application_name(config.server.app_name.trim())
-        .connect_timeout(Duration::new(config.psql.time_out as u64, 0))
-        .to_owned();
-    let conn_manager = bb8_postgres::PostgresConnectionManager::new(configss, NoTls);
-    let the_pool = bb8::Pool::builder().max_size(10).build(conn_manager.clone()).await.expect("cannot create connection for pool postgres");
-    tokio::spawn(async move{
-        let _ = conn_manager.connect();
-    });
-    Ok(the_pool)
+pub async fn new_connection() -> Res<Pool<Postgres>> {
+    let config = get_configurations();
+    let option = PgConnectOptions::new()
+        .host(&config.psql.host)
+        .port(config.psql.port)
+        .database(&config.psql.db_name)
+        .application_name(&config.server.app_name)
+        .username(&config.psql.username)
+        .password(&config.psql.password);
+
+    let conn_manager = PgPoolOptions::new()
+        .max_connections(config.psql.maxpool as u32)
+        .max_lifetime(Duration::new(config.psql.time_out as u64, 0))
+        .connect_with(option)
+        .await?;
+    Ok(conn_manager)
 }
 
-pub async fn get_connection() -> Res<Pool<PostgresConnectionManager<NoTls>>> {
+pub async fn get_connection() -> Res<Pool<Postgres>> {
     THECLIENT.get().await.clone()
 }
 
 pub async fn check_connection() -> Res<()> {
     info!("Checking on database connection...");
     let conn = get_connection().await?;
-    let test = conn.get().await.unwrap();
-    let testconn = test.query_one("select $1::TEXT", &[&"pong"]).await;
-    match testconn {
-        Ok(row) => {
-            let res: String = row.get(0);
-            info!("connected! and got response: {}", res)
-        }
-        Err(err) => error!("{err}"),
-    }
+    let test: (String,) = sqlx::query_as("select $1::TEXT")
+        .bind("pong")
+        .fetch_one(&conn)
+        .await?;
+    info!(
+        "Successfully connected to database and got response \"{}\"",
+        test.0
+    );
     Ok(())
 }

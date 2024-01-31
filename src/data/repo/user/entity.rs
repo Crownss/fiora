@@ -1,9 +1,10 @@
-use chrono::{DateTime, NaiveDateTime};
+use chrono::NaiveDateTime;
+use sqlx::prelude::FromRow;
 // use tokio_postgres::types::FromSql;
-use crate::interactor::user::user_model::User;
+use crate::interactor::user::model::{User, UserWoPw};
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, FromRow)]
 pub struct UserEntity {
     pub id: Uuid,
     pub borrowed_book_id: Uuid,
@@ -14,6 +15,11 @@ pub struct UserEntity {
     pub password: String,
     pub createdtime: NaiveDateTime,
     pub updatedtime: NaiveDateTime,
+}
+
+pub struct Req {
+    pub limit: i64,
+    pub page: i64,
 }
 
 impl Default for UserEntity {
@@ -43,6 +49,21 @@ impl From<UserEntity> for User {
             username: entity.username,
             password: entity.password,
             confPassword: "".to_string(),
+            createdTime: entity.createdtime,
+            updatedTime: entity.updatedtime,
+        }
+    }
+}
+
+impl From<UserEntity> for UserWoPw {
+    fn from(entity: UserEntity) -> Self {
+        Self {
+            id: entity.id,
+            borrowedBookId: entity.borrowed_book_id,
+            firstName: entity.first_name,
+            lastName: entity.last_name,
+            email: entity.email,
+            username: entity.username,
             createdTime: entity.createdtime,
             updatedTime: entity.updatedtime,
         }

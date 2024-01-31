@@ -1,17 +1,15 @@
-use crate::configuration::Configuration;
-use crate::data::infra::psql::{get_connection, check_connection};
+use crate::configuration::get_configurations;
+use crate::data::infra::psql::{check_connection, get_connection};
 use crate::data::repo::user::repository::UserRepo;
 use crate::data::repo::user::UserDataStore;
-use crate::interactor::user::user_service::UserService;
+use crate::interactor::user::intr::UserService;
 use crate::protocol::http::server::{Server, Services};
-use std::ops::Deref;
 use std::sync::Arc;
-use tokio_postgres::GenericClient;
 
 pub async fn start() -> std::io::Result<()> {
     tracing_subscriber::fmt::init();
-    let config = Configuration::new();
-    let _ = check_connection().await.unwrap();
+    let config = get_configurations();
+    check_connection().await.unwrap();
     let theclient = get_connection().await.unwrap();
     //user//
     let user_data_store = UserDataStore::new(theclient.clone());
@@ -22,6 +20,7 @@ pub async fn start() -> std::io::Result<()> {
     let server = Server::new(
         config.server.graceful,
         config.server.client_timeout,
+        config.server.host.clone(),
         config.server.port,
         Services { user_service },
     );

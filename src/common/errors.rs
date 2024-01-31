@@ -1,7 +1,7 @@
 use actix_web::http::header::ContentType;
 use actix_web::{HttpResponse, ResponseError};
+use sqlx::Error as sqlxError;
 use thiserror::Error as ThisError;
-use tokio_postgres::Error as psqlError;
 use tracing::error;
 
 use super::responses::DefaultResponse;
@@ -24,15 +24,15 @@ pub enum CustomError {
     // GeneralError(String)
 }
 
-impl From<psqlError> for CustomError {
-    fn from(psql_error: psqlError) -> Self {
-        match psql_error.as_db_error() {
+impl From<sqlxError> for CustomError {
+    fn from(value: sqlxError) -> Self {
+        match value.as_database_error() {
             Some(db_error) => {
                 error!("error from database {:#?}", db_error.to_string());
-                CustomError::DatabaseError(db_error.detail().unwrap().to_string())
-            },
+                CustomError::DatabaseError(db_error.message().to_string())
+            }
             None => {
-                error!("error from database {:#?}", psql_error);
+                error!("error from database {:#?}", value);
                 CustomError::DatabaseError(String::from("Unrecognized database error!"))
             }
         }
@@ -40,7 +40,7 @@ impl From<psqlError> for CustomError {
 }
 
 impl ResponseError for CustomError {
-    fn error_response(&self) -> HttpResponse{
+    fn error_response(&self) -> HttpResponse {
         error!("got http error: {}", self.to_string().clone());
         let mut resp: DefaultResponse<String> = DefaultResponse {
             status: "4000".to_string(),
@@ -48,32 +48,16 @@ impl ResponseError for CustomError {
             data: None,
         };
         match self {
-            CustomError::BadRequest(_) =>HttpResponse::Ok().insert_header(ContentType::json()).json(resp),
+            CustomError::BadRequest(_) => HttpResponse::Ok()
+                .insert_header(ContentType::json())
+                .json(resp),
             _ => {
                 resp.status = "5000".to_string();
                 resp.message = "Something went wrong!".to_string();
-                HttpResponse::Ok().insert_header(ContentType::json()).json(resp)
-            },
+                HttpResponse::Ok()
+                    .insert_header(ContentType::json())
+                    .json(resp)
+            }
         }
     }
 }
-
-// impl From<Error> for CustomError{
-//     fn from(value: Error) -> Self {
-//         match value.as_dyn_error() {
-//             Some(res) => CustomError::GeneralError(res.to_string()),
-//             None => {
-//                 eprintln!("error {:?}", value);
-//                 CustomError::GeneralError(String::from("Unrecognized general error!"))
-//             }
-//         }
-//     }
-// }
-
-// impl warp::reject::Reject for CustomError {}
-
-// pub(crate) fn custom_reject(error: impl Into<CustomError>) -> Rejection {
-//     warp::reject::custom(CustomError::HttpError(String::from(
-//         error.into().to_string(),
-//     )))
-// }
