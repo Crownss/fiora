@@ -6,7 +6,7 @@ use chrono::{DateTime, Local, NaiveDateTime};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-use super::entity::Req;
+use super::entity::{Req, ReqFilter};
 
 impl super::UserDataStore {
     pub fn new(the_client: TheClient) -> Self {
@@ -44,50 +44,31 @@ impl super::UserDataStore {
         Ok((res, total.0))
     }
 
-    //     pub async fn get_user_by<T: Display + std::marker::Sync + tokio_postgres::types::ToSql>(
-    //         &self,
-    //         param: T,
-    //     ) -> Res<UserEntity> {
-    //         let regexingmail = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-    //         let re = Regex::new(regexingmail).unwrap();
-    //         let mut query = String::from("select id, bookid, firstname, lastname, email, username, createdtime, updatedtime from users u where ");
-    //         match Uuid::parse_str(&param.to_string().trim()) {
-    //             Ok(_) => query.push_str("u.id=$1"),
-    //             Err(_) => {
-    //                 if re.is_match(&param.to_string().trim()) {
-    //                     query.push_str("u.email=$1")
-    //                 } else {
-    //                     query.push_str("u.username=$1")
-    //                 }
-    //             }
-    //         }
-    //         let do_query = self
-    //             .the_client
-    //             .get()
-    //             .await
-    //             .unwrap()
-    //             .query_one(&query, &[&param])
-    //             .await?;
-    //         let mut res = UserEntity::default();
-    //         let id: Uuid = do_query.get(0);
-    //         let bookid: Uuid = do_query.get(1);
-    //         let firstname: String = do_query.get(2);
-    //         let lastname: String = do_query.get(3);
-    //         let email: String = do_query.get(4);
-    //         let username: String = do_query.get(5);
-    //         let createdtime: NaiveDateTime = do_query.get(6);
-    //         let updatedtime: NaiveDateTime = do_query.get(7);
-    //         res = UserEntity {
-    //             id,
-    //             borrowed_book_id: bookid,
-    //             first_name: firstname,
-    //             last_name: lastname,
-    //             email,
-    //             username,
-    //             password: "".to_string(),
-    //             createdtime,
-    //             updatedtime,
-    //         };
-    //         Ok(res)
-    //     }
+    pub async fn get_user_by(&self, req: ReqFilter) -> Res<UserEntity> {
+        let mut query = String::from("select id, bookid as borrowed_book_id, firstname as first_name, lastname as last_name, email, username, createdtime, updatedtime from users where email!=$1 and firstname!=$2 and last_name!=$3 and username!=$4 and borrowed_book_id!=$5");
+        if req.email != "" {
+            query = query.replace("email!=", "email=");
+        }
+        if req.first_name != "" {
+            query = query.replace("firstname!=", "firstname=");
+        }
+        if req.last_name != "" {
+            query = query.replace("lastname!=", "lastname=");
+        }
+        if req.username != "" {
+            query = query.replace("username!=", "username=");
+        }
+        if req.borrowed_book_id != Uuid::nil() {
+            query = query.replace("borrowed_book_id!=", "borrowed_book_id=");
+        }
+        let res = sqlx::query_as::<_, UserEntity>(query.as_str())
+            .bind(req.email)
+            .bind(req.first_name)
+            .bind(req.last_name)
+            .bind(req.username)
+            .bind(req.borrowed_book_id)
+            .fetch_one(&self.the_client)
+            .await?;
+        Ok(res)
+    }
 }
