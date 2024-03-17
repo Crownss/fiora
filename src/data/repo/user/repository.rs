@@ -1,9 +1,11 @@
+use actix_web::web::ReqData;
+
 use crate::common::errors::Res;
 use crate::interactor::user::model::{User, UserWoPw};
 use crate::interactor::user::IUserRepository;
 use std::fmt::Display;
 
-use super::entity::Req;
+use super::entity::{Req, ReqFilter};
 
 pub struct UserRepo {
     user_repo: super::UserDataStore,
@@ -24,6 +26,10 @@ impl IUserRepository for UserRepo {
     async fn list_user(&self, req: Req) -> Res<(Vec<UserWoPw>, i64)> {
         let res = self.user_repo.list_user(req).await?;
         Ok((res.0.into_iter().map(UserWoPw::from).collect(), res.1))
+    }
+    async fn get_user_by(&self, req: ReqFilter) -> Res<UserWoPw> {
+        let res = self.user_repo.get_user_by(req).await?;
+        Ok(UserWoPw::from(res))
     }
 
     // async fn get_user_by<T: Display + std::marker::Sync + tokio_postgres::types::ToSql + std::marker::Send>(&self, param: T) -> Res<UserWoPw>{

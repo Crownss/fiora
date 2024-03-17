@@ -22,6 +22,14 @@ pub struct Req {
     pub page: i64,
 }
 
+pub struct ReqFilter {
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub username: String,
+    pub borrowed_book_id: Uuid,
+}
+
 impl Default for UserEntity {
     fn default() -> Self {
         Self {

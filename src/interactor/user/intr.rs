@@ -73,9 +73,4 @@ where
             }
         }
     }
-
-    // pub async fn get_user_by<T: Display + std::marker::Sync + tokio_postgres::types::ToSql>(&self, param: T) -> Res<UserWoPw>{
-    //     let users = self.user_repo.get_user_by(param).await?;
-    //     Ok(users)
-    // }
 }
