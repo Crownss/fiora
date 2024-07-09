@@ -5,10 +5,10 @@ use sqlx::{
     postgres::{PgConnectOptions, PgPoolOptions},
     Pool, Postgres,
 };
-use std::time::Duration;
-use tracing::{error, info};
+use std::{sync::Arc, time::Duration};
+use tracing::info;
 
-pub type TheClient = Pool<Postgres>;
+pub type TheClient = Arc<Pool<Postgres>>;
 
 lazy_static! {
     static ref THECLIENT: AsyncOnce<Res<Pool<Postgres>>> =

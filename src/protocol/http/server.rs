@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use actix_web::web::{get, post, scope, Data};
 use actix_web::{guard, middleware::Logger, App, HttpServer};
-use actix_web::{HttpRequest, Responder};
+use actix_web::{HttpRequest};
 
 use crate::data::repo::user::repository::UserRepo;
 use crate::interactor::user::intr::UserService;
@@ -39,7 +39,7 @@ impl Server {
             App::new()
                 .wrap(super::middleware::request::Logging)
                 .wrap(Logger::new("\n uri: %U\n got IP: %{r}a\n with sec: %T\n in: %r\n and return: %s\n with user-agent: %{User-Agent}i"))
-                .service(scope("/v1/api").guard(guard::Any(guard::Get()).or(guard::Post())).app_data(uservice.clone()).route("/users", get().to(user_handler::list_users)).route("/users", post().to(user_handler::create_users)).route("/ping", get().to(|_req: HttpRequest|async{"PONG!".to_owned()})))
+                .service(scope("/v1/api").guard(guard::Any(guard::Get()).or(guard::Post())).app_data(uservice.clone()).route("/users", get().to(user_handler::list_users)).route("/users", post().to(user_handler::create_users)).route("/users/getby", get().to(user_handler::get_user_by)).route("/ping", get().to(|_req: HttpRequest|async{"PONG!".to_owned()})))
         })
         .bind(format!("{}:{}", self.host,self.port))
         .unwrap()

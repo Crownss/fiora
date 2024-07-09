@@ -1,5 +1,5 @@
-use chrono::{NaiveDateTime};
-use serde::{Serialize, Deserialize};
+use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
@@ -32,4 +32,13 @@ pub struct UserWoPw {
 pub struct LimitReq {
     pub limit: u32,
     pub page: u32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GetUserByReq {
+    pub firstName: String,
+    pub lastName: String,
+    pub email: String,
+    pub username: String,
+    pub borrowedBookId: String,
 }
