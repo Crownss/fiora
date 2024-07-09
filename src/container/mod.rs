@@ -13,13 +13,13 @@ pub async fn start() -> std::io::Result<()> {
     check_connection().await.unwrap();
     let theclient = Arc::new(get_connection().await.unwrap());
     //user//
-    let user_data_store = UserDataStore::new(Arc::clone(&theclient));
+    let user_data_store = UserDataStore::new(theclient.clone());
     let user_repo = UserRepo::new(user_data_store);
     let user_service = Arc::new(UserService::new(user_repo));
     //user//
-    
+
     //book//
-    let book_data_store = BookDataStore::new(Arc::clone(&theclient));
+    let book_data_store = BookDataStore::new(theclient.clone());
     //book/
 
     let server = Server::new(
