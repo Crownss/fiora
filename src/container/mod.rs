@@ -1,5 +1,6 @@
 use crate::configuration::get_configurations;
 use crate::data::infra::psql::{check_connection, get_connection};
+use crate::data::repo::book::BookDataStore;
 use crate::data::repo::user::repository::UserRepo;
 use crate::data::repo::user::UserDataStore;
 use crate::interactor::user::intr::UserService;
@@ -10,12 +11,16 @@ pub async fn start() -> std::io::Result<()> {
     tracing_subscriber::fmt::init();
     let config = get_configurations();
     check_connection().await.unwrap();
-    let theclient = get_connection().await.unwrap();
+    let theclient = Arc::new(get_connection().await.unwrap());
     //user//
-    let user_data_store = UserDataStore::new(theclient.clone());
+    let user_data_store = UserDataStore::new(Arc::clone(&theclient));
     let user_repo = UserRepo::new(user_data_store);
     let user_service = Arc::new(UserService::new(user_repo));
     //user//
+    
+    //book//
+    let book_data_store = BookDataStore::new(Arc::clone(&theclient));
+    //book/
 
     let server = Server::new(
         config.server.graceful,

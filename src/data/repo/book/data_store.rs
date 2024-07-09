@@ -24,7 +24,7 @@ impl super::BookDataStore {
             .bind(&book.tag)
             .bind(&book.createdtime)
             .bind(&book.updatedtime)
-            .execute(&self.the_client)
+            .execute(&*self.the_client)
             .await?;
         Ok(())
     }
@@ -36,9 +36,9 @@ impl super::BookDataStore {
         let res = sqlx::query_as::<_, BookEntity>(query)
             .bind(req.limit)
             .bind(req.page)
-            .fetch_all(&self.the_client)
+            .fetch_all(&*self.the_client)
             .await?;
-        let total: (i64,) = sqlx::query_as(count).fetch_one(&self.the_client).await?;
+        let total: (i64,) = sqlx::query_as(count).fetch_one(&*self.the_client).await?;
         Ok((res, total.0))
     }
 

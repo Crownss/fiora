@@ -2,10 +2,10 @@ use crate::common::errors::Res;
 use crate::common::responses::DefaultResponse;
 use crate::data::repo::user::repository::UserRepo;
 use crate::interactor::user::intr::UserService;
-use crate::interactor::user::model::{LimitReq, User, UserWoPw};
+use crate::interactor::user::model::{GetUserByReq, LimitReq, User, UserWoPw};
 use actix_web::http::header::{self, ContentType};
-use actix_web::web::{Data, Json, Query};
-use actix_web::{get, HttpResponse, Responder, Result};
+use actix_web::web::{get, Data, Header, Json, Query};
+use actix_web::{get, HttpRequest, HttpResponse, Responder, Result};
 use std::sync::Arc;
 
 pub async fn list_users(
@@ -30,7 +30,7 @@ pub async fn create_users(
     };
     match user_service.create_user(new_user).await {
         Ok(_) => {}
-        Err(err) => {
+        Err(_) => {
             resp.status = "ERROR".to_string();
             resp.message = "something went wrong!".to_string();
         }
@@ -38,4 +38,71 @@ pub async fn create_users(
     Ok(HttpResponse::Ok()
         .insert_header(ContentType::json())
         .json(resp))
+}
+
+pub async fn get_user_by(
+    user_service: Data<Arc<UserService<UserRepo>>>,
+    req: HttpRequest,
+) -> Res<HttpResponse> {
+    let getheader = GetUserByReq {
+        firstName: format!(
+            "{}",
+            if let Some(gethead) = req.headers().get("firstName") {
+                match gethead.to_str() {
+                    Ok(res) => res,
+                    Err(_) => "",
+                }
+            } else {
+                ""
+            }
+        ),
+        lastName: format!(
+            "{}",
+            if let Some(gethead) = req.headers().get("lastName") {
+                match gethead.to_str() {
+                    Ok(res) => res,
+                    Err(_) => "",
+                }
+            } else {
+                ""
+            }
+        ),
+        email: format!(
+            "{}",
+            if let Some(gethead) = req.headers().get("email") {
+                match gethead.to_str() {
+                    Ok(res) => res,
+                    Err(_) => "",
+                }
+            } else {
+                ""
+            }
+        ),
+        username: format!(
+            "{}",
+            if let Some(gethead) = req.headers().get("username") {
+                match gethead.to_str() {
+                    Ok(res) => res,
+                    Err(_) => "",
+                }
+            } else {
+                ""
+            }
+        ),
+        borrowedBookId: format!(
+            "{}",
+            if let Some(gethead) = req.headers().get("borrowedBookId") {
+                match gethead.to_str() {
+                    Ok(res) => res,
+                    Err(_) => "",
+                }
+            } else {
+                ""
+            }
+        ),
+    };
+    let get_user = user_service.get_user_by(getheader).await;
+    Ok(HttpResponse::Ok()
+        .insert_header(ContentType::json())
+        .json(get_user))
 }
