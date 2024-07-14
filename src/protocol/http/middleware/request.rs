@@ -3,7 +3,7 @@ use std::{
     rc::Rc,
 };
 
-use actix_http::h1;
+use actix_http::{h1, Method};
 use actix_web::{
     dev::{self, Service, ServiceRequest, ServiceResponse, Transform},
     web, Error,
@@ -14,10 +14,10 @@ use tracing::info;
 pub struct Logging;
 
 impl<S: 'static, B> Transform<S, ServiceRequest> for Logging
-    where
-        S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-        S::Future: 'static,
-        B: 'static,
+where
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    S::Future: 'static,
+    B: 'static,
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
@@ -38,10 +38,10 @@ pub struct LoggingMiddleware<S> {
 }
 
 impl<S, B> Service<ServiceRequest> for LoggingMiddleware<S>
-    where
-        S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error> + 'static,
-        S::Future: 'static,
-        B: 'static,
+where
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error> + 'static,
+    S::Future: 'static,
+    B: 'static,
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
@@ -54,9 +54,16 @@ impl<S, B> Service<ServiceRequest> for LoggingMiddleware<S>
         Box::pin(async move {
             // extract bytes from request body
             let body = req.extract::<web::Bytes>().await.unwrap();
-            // let path = req.path();
-            info!("request: {body:#?}");
-
+            let requestnya = req.request();
+            let mut bodyref = String::from_utf8(body.to_vec()).expect("Invalid UTF-8");
+            bodyref = bodyref.trim().replace("\n", "").replace(" ", "");
+            assert_eq!(req.method(), Method::GET);
+            match req.method() {
+                &Method::GET | &Method::DELETE => {
+                    info!("{:?}", requestnya)
+                }
+                _ => info!("{:?}\nrequest:{:?}", requestnya, bodyref),
+            }
             // re-insert body back into request to be used by handlers
             req.set_payload(bytes_to_payload(body));
 
