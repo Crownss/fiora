@@ -57,7 +57,6 @@ where
             let requestnya = req.request();
             let mut bodyref = String::from_utf8(body.to_vec()).expect("Invalid UTF-8");
             bodyref = bodyref.trim().replace("\n", "").replace(" ", "");
-            assert_eq!(req.method(), Method::GET);
             match req.method() {
                 &Method::GET | &Method::DELETE => {
                     info!("{:?}", requestnya)
