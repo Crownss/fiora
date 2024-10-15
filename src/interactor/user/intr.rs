@@ -35,7 +35,6 @@ where
         let passwordhash = hash(new_user.password, DEFAULT_COST).unwrap();
         let timenow = Local::now().naive_local();
         new_user.id = Uuid::new_v4();
-        new_user.borrowedBookId = Uuid::nil();
         new_user.createdTime = timenow;
         new_user.updatedTime = timenow;
         new_user.password = passwordhash;
@@ -84,7 +83,6 @@ where
             last_name: req.lastName,
             email: req.email,
             username: req.username,
-            borrowed_book_id: Uuid::from_str(&req.borrowedBookId).unwrap_or_default(),
         };
         let mut resp = DefaultResponse {
             status: "ERROR".to_string(),

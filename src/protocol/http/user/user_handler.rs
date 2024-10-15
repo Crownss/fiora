@@ -48,10 +48,7 @@ pub async fn get_user_by(
         firstName: format!(
             "{}",
             if let Some(gethead) = req.headers().get("firstName") {
-                match gethead.to_str() {
-                    Ok(res) => res,
-                    Err(_) => "",
-                }
+                gethead.to_str().unwrap_or_else(|_| "")
             } else {
                 ""
             }
@@ -59,10 +56,7 @@ pub async fn get_user_by(
         lastName: format!(
             "{}",
             if let Some(gethead) = req.headers().get("lastName") {
-                match gethead.to_str() {
-                    Ok(res) => res,
-                    Err(_) => "",
-                }
+                gethead.to_str().unwrap_or_else(|_| "")
             } else {
                 ""
             }
@@ -70,10 +64,7 @@ pub async fn get_user_by(
         email: format!(
             "{}",
             if let Some(gethead) = req.headers().get("email") {
-                match gethead.to_str() {
-                    Ok(res) => res,
-                    Err(_) => "",
-                }
+                gethead.to_str().unwrap_or_else(|_| "")
             } else {
                 ""
             }
@@ -81,21 +72,7 @@ pub async fn get_user_by(
         username: format!(
             "{}",
             if let Some(gethead) = req.headers().get("username") {
-                match gethead.to_str() {
-                    Ok(res) => res,
-                    Err(_) => "",
-                }
-            } else {
-                ""
-            }
-        ),
-        borrowedBookId: format!(
-            "{}",
-            if let Some(gethead) = req.headers().get("borrowedBookId") {
-                match gethead.to_str() {
-                    Ok(res) => res,
-                    Err(_) => "",
-                }
+                gethead.to_str().unwrap_or_else(|_| "")
             } else {
                 ""
             }

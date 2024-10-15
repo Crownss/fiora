@@ -6,8 +6,9 @@ pub struct Book {
     pub id: Uuid,
     pub title: String,
     pub desc: String,
-    pub tag: Vec<String>,
-    pub borrowed_value: i32,
+    pub tag: String,
+    pub borrowed: i32,
+    pub stock: i32,
     pub createdtime: NaiveDateTime,
     pub updatedtime: NaiveDateTime,
 }
