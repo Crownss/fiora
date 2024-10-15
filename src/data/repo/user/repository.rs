@@ -4,7 +4,7 @@ use crate::common::errors::Res;
 use crate::interactor::user::model::{User, UserWoPw};
 use crate::interactor::user::IUserRepository;
 use std::fmt::Display;
-
+use crate::data::repo::book::entity::UpdateReq;
 use super::entity::{Req, ReqFilter};
 
 pub struct UserRepo {

@@ -7,7 +7,6 @@ use uuid::Uuid;
 #[derive(Debug, FromRow)]
 pub struct UserEntity {
     pub id: Uuid,
-    pub borrowed_book_id: Uuid,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -27,14 +26,12 @@ pub struct ReqFilter {
     pub last_name: String,
     pub email: String,
     pub username: String,
-    pub borrowed_book_id: Uuid,
 }
 
 impl Default for UserEntity {
     fn default() -> Self {
         Self {
             id: Uuid::nil(),
-            borrowed_book_id: Uuid::nil(),
             first_name: "".to_string(),
             last_name: "".to_string(),
             email: "".to_string(),
@@ -50,7 +47,6 @@ impl From<UserEntity> for User {
     fn from(entity: UserEntity) -> Self {
         Self {
             id: entity.id,
-            borrowedBookId: entity.borrowed_book_id,
             firstName: entity.first_name,
             lastName: entity.last_name,
             email: entity.email,
@@ -67,7 +63,6 @@ impl From<UserEntity> for UserWoPw {
     fn from(entity: UserEntity) -> Self {
         Self {
             id: entity.id,
-            borrowedBookId: entity.borrowed_book_id,
             firstName: entity.first_name,
             lastName: entity.last_name,
             email: entity.email,

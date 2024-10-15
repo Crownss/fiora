@@ -5,7 +5,6 @@ use uuid::Uuid;
 #[derive(Debug, Serialize)]
 pub struct User {
     pub id: Uuid,
-    pub borrowedBookId: Uuid,
     pub firstName: String,
     pub lastName: String,
     pub email: String,
@@ -19,7 +18,6 @@ pub struct User {
 #[derive(Debug, Serialize)]
 pub struct UserWoPw {
     pub id: Uuid,
-    pub borrowedBookId: Uuid,
     pub firstName: String,
     pub lastName: String,
     pub email: String,
@@ -40,5 +38,4 @@ pub struct GetUserByReq {
     pub lastName: String,
     pub email: String,
     pub username: String,
-    pub borrowedBookId: String,
 }
