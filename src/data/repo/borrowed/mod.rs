@@ -1,6 +1,6 @@
-use std::sync::Arc;
-use sqlx::{Pool, Postgres};
 use crate::data::repo::user::repository::UserRepo;
+use sqlx::{Pool, Postgres};
+use std::sync::Arc;
 
 pub mod data_store;
 pub mod entity;

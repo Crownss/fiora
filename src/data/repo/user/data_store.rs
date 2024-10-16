@@ -1,67 +1,59 @@
 use crate::common::errors::Res;
-use crate::data::repo::user::entity::UserEntity;
-use crate::interactor::user::model::User;
-use crate::{common::errors::CustomError, data::infra::psql::TheClient};
-use chrono::{DateTime, Local, NaiveDateTime};
-use sqlx::FromRow;
+use crate::data::infra::psql::TheClient;
+use crate::data::repo::user::entity::{AuthEntity, ReqGetUserBy, ResGetUserBy, UserEntity};
+use sqlx::{Postgres, Row, Transaction};
 use uuid::Uuid;
 
-use super::entity::{Req, ReqFilter};
-
 impl super::UserDataStore {
+    /*
+    every little pieces business model in here
+    */
     pub fn new(the_client: TheClient) -> Self {
         Self { the_client }
     }
 
-    pub async fn create_user(&self, user: &User) -> Res<()> {
-        let query = "insert into users (id, firstname, lastname, email, username, password, createdtime, updatedtime) values ($1, $2, $3, $4, $5, $6, $7, $8);";
+    pub async fn create_user(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        req: &UserEntity,
+    ) -> Res<()> {
+        let query = "insert into users (id, auth_id, full_name, address, gender, status, created_at, updated_at) values ($1, $2, $3, $4, $5, $6, $7, $8);";
         sqlx::query(query)
-            .bind(&user.id)
-            .bind(&user.firstName)
-            .bind(&user.lastName)
-            .bind(&user.email)
-            .bind(&user.username)
-            .bind(&user.password)
-            .bind(&user.createdTime)
-            .bind(&user.updatedTime)
-            .execute(&*self.the_client)
+            .bind(&req.id)
+            .bind(&req.auth_id)
+            .bind(&req.full_name)
+            .bind(&req.address)
+            .bind(&req.gender)
+            .bind(&req.status)
+            .bind(&req.created_at)
+            .bind(&req.updated_at)
+            .execute(&mut **tx)
             .await?;
         Ok(())
     }
-
-    pub async fn list_user(&self, mut req: Req) -> Res<(Vec<UserEntity>, i64)> {
-        req.page = (req.page - 1) * req.limit;
-        let query =
-            "select id, firstname as first_name, lastname as last_name, email, username, password, createdtime, updatedtime from users order by createdtime desc limit $1 offset $2";
-        let count = "select count(id) from users";
-        let res = sqlx::query_as::<_, UserEntity>(query)
-            .bind(req.limit)
-            .bind(req.page)
-            .fetch_all(&*self.the_client)
+    pub async fn create_auth(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        req: &AuthEntity,
+    ) -> Res<Uuid> {
+        let query = "insert into auth (id, username, email, password, created_at, updated_at) values ($1, $2, $3, $4, $5, $6) returning id";
+        let execute_query = sqlx::query(query)
+            .bind(&req.id)
+            .bind(&req.username)
+            .bind(&req.email)
+            .bind(&req.password)
+            .bind(&req.created_at)
+            .bind(&req.updated_at)
+            .fetch_one(&mut **tx)
             .await?;
-        let total: (i64,) = sqlx::query_as(count).fetch_one(&*self.the_client).await?;
-        Ok((res, total.0))
+        Ok(execute_query.try_get("id")?)
     }
-
-    pub async fn get_user_by(&self, req: ReqFilter) -> Res<UserEntity> {
-        let mut query = String::from("select id, firstname as first_name, lastname as last_name, email, username, createdtime, updatedtime from users where email!=$1 and firstname!=$2 and lastname!=$3 and username!=$4 and bookid!=$5");
-        if req.email != "" {
-            query = query.replace("email!=", "email=");
-        }
-        if req.first_name != "" {
-            query = query.replace("firstname!=", "firstname=");
-        }
-        if req.last_name != "" {
-            query = query.replace("lastname!=", "lastname=");
-        }
-        if req.username != "" {
-            query = query.replace("username!=", "username=");
-        }
-        let res = sqlx::query_as::<_, UserEntity>(query.as_str())
-            .bind(req.email)
-            .bind(req.first_name)
-            .bind(req.last_name)
-            .bind(req.username)
+    pub async fn get_user_by(&self, req: ReqGetUserBy) -> Res<ResGetUserBy> {
+        let query = "select u.id, a.username, a.email, a.password, u.full_name, u.address, u.gender, u.status, u.created_at, u.updated_at from users u inner join auth a on a.id=u.auth_id where u.id!=$1 and a.username!=$2 and a.email!=$3";
+        let res = sqlx::query_as::<_, ResGetUserBy>(query)
+            .bind(&req.id)
+            .bind(&req.username)
+            .bind(&req.email)
             .fetch_one(&*self.the_client)
             .await?;
         Ok(res)

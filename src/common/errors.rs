@@ -2,6 +2,7 @@ use super::responses::DefaultResponse;
 use actix_http::StatusCode;
 use actix_web::http::header::ContentType;
 use actix_web::{http, HttpResponse, ResponseError};
+use jsonwebtoken::errors::{Error as jwrerror, ErrorKind};
 use sqlx::Error as sqlxError;
 use thiserror::Error as ThisError;
 use tracing::error;
@@ -14,6 +15,8 @@ pub enum CustomError {
     DatabaseError(String),
     #[error("{0}")]
     HttpError(String),
+    #[error("{0}")]
+    JWTError(String),
     // #[error("{0}")]
     // InternalServerError(String),
     // #[error("An error occurred during general interaction {0}")]
@@ -32,6 +35,13 @@ impl From<sqlxError> for CustomError {
                 CustomError::DatabaseError(String::from("Unrecognized database error!"))
             }
         }
+    }
+}
+
+impl From<jwrerror> for CustomError {
+    fn from(value: jwrerror) -> Self {
+        error!("error from jwt {:#?}", value.to_string());
+        CustomError::JWTError(value.to_string())
     }
 }
 

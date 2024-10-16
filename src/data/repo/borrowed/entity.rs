@@ -1,7 +1,7 @@
+use crate::data::repo::user::entity::UserEntity;
 use chrono::NaiveDateTime;
 use sqlx::FromRow;
 use uuid::Uuid;
-use crate::data::repo::user::entity::UserEntity;
 
 #[derive(Debug, FromRow)]
 pub struct BorrowedEntity {

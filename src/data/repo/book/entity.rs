@@ -21,7 +21,7 @@ pub struct Req {
 }
 
 pub struct UpdateReq {
-    pub id: Uuid, //required
+    pub id: Uuid,                   //required
     pub updatedtime: NaiveDateTime, //required
     pub title: String,
     pub desc: String,
