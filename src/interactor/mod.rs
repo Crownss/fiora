@@ -1,2 +1,2 @@
-pub mod book;
-pub mod user;
+pub mod auth;
+pub mod borrowing;

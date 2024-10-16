@@ -3,15 +3,15 @@ use std::time::Duration;
 
 use actix_web::web::{get, post, scope, Data};
 use actix_web::HttpRequest;
-use actix_web::{guard, middleware::Logger, App, HttpServer};
+use actix_web::{guard, App, HttpServer};
 
 use crate::data::repo::user::repository::UserRepo;
-use crate::interactor::user::intr::UserService;
+use crate::interactor::auth::intr::AuthService;
 
 use super::user::user_handler;
 
 pub struct Services {
-    pub user_service: Arc<UserService<UserRepo>>,
+    pub user_service: Arc<AuthService<UserRepo>>,
 }
 
 pub struct Server {
@@ -48,9 +48,9 @@ impl Server {
                     scope("/v1/api")
                         .guard(guard::Any(guard::Get()).or(guard::Post()))
                         .app_data(uservice.clone())
-                        .route("/users", get().to(user_handler::list_users))
-                        .route("/users", post().to(user_handler::create_users))
-                        .route("/users/getby", get().to(user_handler::get_user_by))
+                        // .route("/users", get().to(user_handler::list_users))
+                        .route("/users", post().to(user_handler::register))
+                        // .route("/users/getby", get().to(user_handler::get_user_by))
                         .route(
                             "/ping",
                             get().to(|_req: HttpRequest| async { "PONG!".to_owned() }),

@@ -1,5 +1,5 @@
-use std::env;
 use actix_web::dev::ResourcePath;
+use std::env;
 
 use dotenv::dotenv;
 use lazy_static::lazy_static;
